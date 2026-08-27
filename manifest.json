@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.giodc.omarchfonts",
+  "name": "OmarchFonts",
+  "version": "0.1.0",
+  "author": "giodc",
+  "license": "MIT",
+  "description": "Browse monospace fonts in a live preview grid, set the Omarchy system font with one click, and install .ttf/.otf (or zip) fonts into ~/.local/share/fonts without leaving the panel.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "OmarchFonts",
+    "description": "Preview, install, and apply monospace fonts",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "schema": [
+      {
+        "key": "previewText",
+        "type": "string",
+        "label": "Preview sample",
+        "defaultValue": "Aa Bb 123",
+        "description": "Sample text rendered in each font card."
+      },
+      {
+        "key": "autoApplyOnInstall",
+        "type": "boolean",
+        "label": "Apply after install",
+        "defaultValue": true,
+        "description": "When a newly installed font is monospace, set it as the system font automatically."
+      }
+    ]
+  }
+}
