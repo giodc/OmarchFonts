@@ -4,6 +4,10 @@ Browse Omarchy fonts in a live preview grid, apply one with Activate, and instal
 
 **Version:** 0.2.0
 
+## Screenshot
+
+![OmarchFonts preview](preview.png)
+
 ## What it does
 
 - **Grid preview** — monospace fonts from `omarchy font list`, plus user-installed faces from `~/.local/share/fonts`
