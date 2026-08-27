@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "io.github.giodc.omarchfonts",
   "name": "OmarchFonts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "giodc",
   "license": "MIT",
-  "description": "Browse monospace fonts in a live preview grid, set the Omarchy system font with one click, and install .ttf/.otf (or zip) fonts into ~/.local/share/fonts without leaving the panel.",
+  "description": "Browse fonts in a live preview grid, activate or delete user fonts from the panel, and install .ttf/.otf/.zip into ~/.local/share/fonts.",
   "kinds": [
     "bar-widget"
   ],

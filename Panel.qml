@@ -17,7 +17,7 @@ Panel {
   property var hostWidget: null
   readonly property var barIdentity: hostWidget || root
 
-  readonly property string pluginVersion: "0.2.0"
+  readonly property string pluginVersion: "0.3.0"
   readonly property color fg: bar ? bar.foreground : Color.foreground
   readonly property color dim: Qt.darker(fg, 1.4)
   readonly property string uiFont: bar ? bar.fontFamily : Style.font.family
@@ -35,6 +35,10 @@ Panel {
   property string notice: ""
   property string noticeColor: "transparent"
   property int selectedIndex: 0
+
+  property bool removeConfirmOpen: false
+  property string removePendingFamily: ""
+  property bool removing: false
 
   readonly property var filteredFonts: {
     var q = String(searchText || "").trim().toLowerCase()
@@ -84,10 +88,29 @@ Panel {
   }
 
   function applyFont(family) {
-    if (!family || applyingFamily) return
+    if (!family || applyingFamily || root.removing) return
     applyingFamily = family
     busy = true
     setProc.exec([scriptPath("fonts.sh"), "set", family])
+  }
+
+  function requestRemove(family) {
+    if (!family || root.busy || root.removing) return
+    removePendingFamily = family
+    removeConfirmOpen = true
+  }
+
+  function cancelRemove() {
+    if (root.removing) return
+    removeConfirmOpen = false
+    removePendingFamily = ""
+  }
+
+  function confirmRemove() {
+    if (!removePendingFamily || root.removing) return
+    removing = true
+    busy = true
+    removeProc.exec([scriptPath("fonts.sh"), "remove", removePendingFamily])
   }
 
   function pickAndInstall() {
@@ -288,6 +311,51 @@ Panel {
     stderr: StdioCollector {}
   }
 
+  Process {
+    id: removeProc
+    stdout: StdioCollector {
+      id: removeOut
+      onStreamFinished: {
+        var raw = String(text || "").trim()
+        var data = {}
+        try { data = JSON.parse(raw || "{}") } catch (e) { data = {} }
+        var family = root.removePendingFamily
+        root.removing = false
+        root.busy = false
+        root.removeConfirmOpen = false
+        root.removePendingFamily = ""
+        if (data.ok) {
+          var n = (data.removed && data.removed.length) ? data.removed.length : 0
+          var msg = "Removed " + family + (n ? (" (" + n + " file" + (n === 1 ? "" : "s") + ")") : "")
+          root.setNotice(msg, false)
+          root.notify("OmarchFonts", msg)
+          if (root.currentFamily === family) root.currentFamily = ""
+          root.refreshFonts(true)
+        } else {
+          var err = data.error || "Remove failed"
+          root.setNotice(err, true)
+          root.notify("OmarchFonts", err)
+        }
+      }
+    }
+    stderr: StdioCollector {}
+    onExited: function(exitCode) {
+      if (exitCode !== 0 && root.removing) {
+        Qt.callLater(function() {
+          if (!root.removing) return
+          var text = String(removeOut.text || "").trim()
+          var data = {}
+          try { data = JSON.parse(text || "{}") } catch (e) { data = {} }
+          root.removing = false
+          root.busy = false
+          root.removeConfirmOpen = false
+          root.removePendingFamily = ""
+          root.setNotice(data.error || "Remove failed", true)
+        })
+      }
+    }
+  }
+
   IpcHandler {
     target: root.ipcTarget
     function open(): void { root.open() }
@@ -311,11 +379,18 @@ Panel {
     PanelKeyCatcher {
       id: keyCatcher
       anchors.fill: parent
-      blocked: searchField.activeFocus
-      onCloseRequested: root.close()
+      blocked: searchField.activeFocus || root.removeConfirmOpen
+      onCloseRequested: {
+        if (root.removeConfirmOpen) root.cancelRemove()
+        else root.close()
+      }
       onTabRequested: function(direction) { root.switchPanel(direction) }
 
       Keys.onPressed: function(event) {
+        if (root.removeConfirmOpen) {
+          if (removeConfirm.handleKey(event)) event.accepted = true
+          return
+        }
         if (searchField.activeFocus) return
         var count = root.filteredFonts.length
         if (count === 0) return
@@ -334,6 +409,10 @@ Panel {
         } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
           var row = root.filteredFonts[root.selectedIndex]
           if (row) root.applyFont(row.family)
+          event.accepted = true
+        } else if (event.key === Qt.Key_Delete || event.key === Qt.Key_Backspace) {
+          var del = root.filteredFonts[root.selectedIndex]
+          if (del && del.user) root.requestRemove(del.family)
           event.accepted = true
         } else if (event.key === Qt.Key_Slash) {
           searchField.forceActiveFocus()
@@ -525,7 +604,8 @@ Panel {
               readonly property bool isApplying: root.applyingFamily === modelData.family
               readonly property bool isMono: modelData.monospace !== false
               readonly property bool isUser: modelData.user === true
-              readonly property bool hovered: cardArea.containsMouse || activateArea.containsMouse
+              readonly property bool hovered: cardArea.containsMouse
+                || activateArea.containsMouse || deleteArea.containsMouse
               readonly property string extLabel: {
                 var e = String(modelData.ext || "")
                 if (!e) return ""
@@ -628,6 +708,41 @@ Panel {
                 }
 
                 Rectangle {
+                  id: deleteBtn
+                  anchors.left: parent.left
+                  anchors.bottom: parent.bottom
+                  anchors.margins: Style.space(10)
+                  visible: isUser && (hovered || isSelected) && !root.removing
+                  width: deleteLabel.implicitWidth + Style.space(14)
+                  height: Style.space(22)
+                  radius: Math.min(4, Style.cornerRadius)
+                  color: deleteArea.containsMouse
+                    ? Style.hoverFillFor(root.fg, Color.urgent)
+                    : Style.hoverFillFor(root.fg, root.fg)
+                  border.width: Math.max(1, Style.space(1))
+                  border.color: Color.urgent
+                  z: 2
+
+                  Text {
+                    id: deleteLabel
+                    anchors.centerIn: parent
+                    text: "Delete"
+                    color: root.fg
+                    font.family: root.uiFont
+                    font.pixelSize: Style.font.caption
+                    font.bold: true
+                  }
+
+                  MouseArea {
+                    id: deleteArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.requestRemove(modelData.family)
+                  }
+                }
+
+                Rectangle {
                   id: activateBtn
                   anchors.right: parent.right
                   anchors.bottom: parent.bottom
@@ -673,6 +788,24 @@ Panel {
             font.family: root.uiFont
             font.pixelSize: Style.font.body
           }
+        }
+
+        ConfirmDialog {
+          id: removeConfirm
+          anchors.fill: parent
+          z: 100
+          opened: root.removeConfirmOpen
+          message: root.removePendingFamily
+            ? ("Remove \"" + root.removePendingFamily + "\" from ~/.local/share/fonts?")
+            : "Remove this font?"
+          cancelText: "Cancel"
+          confirmText: root.removing ? "Removing…" : "Delete"
+          background: Color.popups.background
+          foreground: root.fg
+          selectedText: Color.urgent
+          fontFamily: root.uiFont
+          onCanceled: root.cancelRemove()
+          onConfirmed: root.confirmRemove()
         }
       }
     }

@@ -280,12 +280,67 @@ cmd_install_paths() {
   emit_installed | tee "$state_dir/omarchfonts-last-install.json"
 }
 
+# Delete user-installed files for a family from ~/.local/share/fonts only.
+# Never touches system font directories.
+cmd_remove() {
+  local family=${1-}
+  if [[ -z $family ]]; then
+    echo '{"ok":false,"error":"missing font family"}'
+    exit 1
+  fi
+  if [[ ! -d $FONTS_DIR ]]; then
+    echo '{"ok":false,"error":"no user fonts directory"}'
+    exit 1
+  fi
+
+  local fonts_real
+  fonts_real=$(realpath -m -- "$FONTS_DIR")
+  local deleted=()
+  local f fam dest_real
+  while IFS= read -r f; do
+    [[ -z $f || ! -f $f ]] && continue
+    dest_real=$(realpath -m -- "$f")
+    # Refuse anything outside the user fonts dir (symlink escape, etc.).
+    case "$dest_real" in
+      "$fonts_real"/*) ;;
+      *) continue ;;
+    esac
+    fam=$(family_from_file "$f")
+    [[ $fam == "$family" ]] || continue
+    if rm -f -- "$f"; then
+      deleted+=("$dest_real")
+    fi
+  done < <(
+    find "$FONTS_DIR" -type f \( \
+      -iname '*.ttf' -o -iname '*.otf' -o -iname '*.ttc' -o \
+      -iname '*.otc' -o -iname '*.woff' -o -iname '*.woff2' \
+    \) -print 2>/dev/null
+  )
+
+  fc-cache -f "$FONTS_DIR" >/dev/null 2>&1 || true
+
+  if [[ ${#deleted[@]} -eq 0 ]]; then
+    printf '{"ok":false,"error":"no user files found for %s","family":"%s"}\n' \
+      "$(json_escape "$family")" "$(json_escape "$family")"
+    exit 1
+  fi
+
+  printf '{"ok":true,"family":"%s","removed":[' "$(json_escape "$family")"
+  local i
+  for i in "${!deleted[@]}"; do
+    [[ $i -gt 0 ]] && printf ','
+    printf '"%s"' "$(json_escape "${deleted[$i]}")"
+  done
+  printf ']}\n'
+}
+
 case "$ACTION" in
   list) cmd_list ;;
   current) cmd_current ;;
   set) cmd_set "${2-}" ;;
   pick-install) cmd_pick_and_install ;;
   install-paths) cmd_install_paths "$@" ;;
+  remove) cmd_remove "${2-}" ;;
   fonts-dir) printf '%s\n' "$FONTS_DIR" ;;
   -h|--help|help|"")
     cat <<'EOF'
@@ -297,6 +352,7 @@ Commands:
   set <name>        Apply font via omarchy-font-set
   pick-install      Zenity file picker → copy into ~/.local/share/fonts
   install-paths …   Install given .ttf/.otf/.zip paths (no dialog)
+  remove <family>   Delete user-installed files for a family
   fonts-dir         Print the user fonts directory
 EOF
     ;;
