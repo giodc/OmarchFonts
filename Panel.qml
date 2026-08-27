@@ -17,6 +17,7 @@ Panel {
   property var hostWidget: null
   readonly property var barIdentity: hostWidget || root
 
+  readonly property string pluginVersion: "0.2.0"
   readonly property color fg: bar ? bar.foreground : Color.foreground
   readonly property color dim: Qt.darker(fg, 1.4)
   readonly property string uiFont: bar ? bar.fontFamily : Style.font.family
@@ -49,7 +50,8 @@ Panel {
 
   readonly property int columns: 2
   readonly property int cellGap: Style.space(10)
-  readonly property int cellHeight: Style.space(118)
+  readonly property int cellHeight: Style.space(148)
+  readonly property int previewPixelSize: Style.font.displayLarge
 
   function scriptPath(name) {
     var url = Qt.resolvedUrl("scripts/" + name)
@@ -372,6 +374,13 @@ Panel {
               font.letterSpacing: 1
               anchors.verticalCenter: parent.verticalCenter
             }
+            Text {
+              text: "v" + root.pluginVersion
+              color: root.dim
+              font.family: root.uiFont
+              font.pixelSize: Style.font.caption
+              anchors.verticalCenter: parent.verticalCenter
+            }
           }
 
           Row {
@@ -560,7 +569,7 @@ Panel {
                     text: root.previewText
                     color: root.fg
                     font.family: modelData.family
-                    font.pixelSize: Style.font.heading
+                    font.pixelSize: root.previewPixelSize
                     elide: Text.ElideRight
                   }
 
