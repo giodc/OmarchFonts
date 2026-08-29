@@ -1,12 +1,12 @@
-# OmarchFonts
+# OmaFonts
 
 Browse Omarchy fonts in a live preview grid, apply one with Activate, and install `.ttf` / `.otf` / `.zip` fonts into `~/.local/share/fonts` from the panel.
 
-**Version:** 0.3.0
+**Version:** 0.4.0
 
 ## Screenshot
 
-![OmarchFonts preview](preview.png)
+![OmaFonts preview](preview.png)
 
 ## What it does
 
@@ -20,7 +20,7 @@ Browse Omarchy fonts in a live preview grid, apply one with Activate, and instal
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/giodc/OmarchFonts.git --enable
+omarchy plugin add https://github.com/giodc/OmaFonts.git --enable
 ```
 
 ## Dependencies
@@ -38,8 +38,8 @@ These are expected on a normal Omarchy install:
 
 ```bash
 mkdir -p ~/.config/omarchy/plugins
-ln -sfn "$(pwd)" ~/.config/omarchy/plugins/io.github.giodc.omarchfonts
-omarchy plugin enable io.github.giodc.omarchfonts
+ln -sfn "$(pwd)" ~/.config/omarchy/plugins/io.github.giodc.omafonts
+omarchy plugin enable io.github.giodc.omafonts
 omarchy-shell shell rescanPlugins
 ```
 
@@ -62,5 +62,16 @@ omarchy-shell shell rescanPlugins
 ## Remove
 
 ```bash
-omarchy plugin remove io.github.giodc.omarchfonts
+omarchy plugin remove io.github.giodc.omafonts
 ```
+
+## Renamed from OmarchFonts
+
+If you had the old `io.github.giodc.omarchfonts` plugin installed:
+
+```bash
+omarchy plugin remove io.github.giodc.omarchfonts --yes
+omarchy plugin add https://github.com/giodc/OmaFonts.git --enable
+```
+
+Then replace `io.github.giodc.omarchfonts` with `io.github.giodc.omafonts` in `~/.config/omarchy/shell.json` and run `omarchy restart shell`.

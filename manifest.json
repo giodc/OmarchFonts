@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "io.github.giodc.omarchfonts",
-  "name": "OmarchFonts",
-  "version": "0.3.0",
+  "id": "io.github.giodc.omafonts",
+  "name": "OmaFonts",
+  "version": "0.4.0",
   "author": "giodc",
   "license": "MIT",
   "description": "Browse fonts in a live preview grid, activate or delete user fonts from the panel, and install .ttf/.otf/.zip into ~/.local/share/fonts.",
@@ -13,7 +13,7 @@
     "barWidget": "BarWidget.qml"
   },
   "barWidget": {
-    "displayName": "OmarchFonts",
+    "displayName": "OmaFonts",
     "description": "Preview, install, and apply monospace fonts",
     "category": "System",
     "allowMultiple": false,

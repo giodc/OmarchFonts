@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# OmarchFonts helpers — list / set / install fonts for Omarchy.
+# OmaFonts helpers — list / set / install fonts for Omarchy.
 set -euo pipefail
 
 FONTS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/fonts"
@@ -86,7 +86,7 @@ install_zip() {
     echo "unzip is required to install font zip archives" >&2
     return 1
   fi
-  tmp=$(mktemp -d "${TMPDIR:-/tmp}/omarchfonts-XXXXXX")
+  tmp=$(mktemp -d "${TMPDIR:-/tmp}/omafonts-XXXXXX")
   unzip -qq -o -j -- "$zip" \
     '*.ttf' '*.otf' '*.ttc' '*.otc' '*.woff' '*.woff2' \
     '*.TTF' '*.OTF' '*.TTC' '*.OTC' '*.WOFF' '*.WOFF2' \
@@ -262,7 +262,7 @@ cmd_pick_and_install() {
   # Persist last result for debugging when the panel swallows stdout.
   local state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy"
   mkdir -p "$state_dir"
-  emit_installed | tee "$state_dir/omarchfonts-last-install.json"
+  emit_installed | tee "$state_dir/omafonts-last-install.json"
 }
 
 cmd_install_paths() {
@@ -277,7 +277,7 @@ cmd_install_paths() {
   fc-cache -f "$FONTS_DIR" >/dev/null 2>&1 || true
   local state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy"
   mkdir -p "$state_dir"
-  emit_installed | tee "$state_dir/omarchfonts-last-install.json"
+  emit_installed | tee "$state_dir/omafonts-last-install.json"
 }
 
 # Delete user-installed files for a family from ~/.local/share/fonts only.

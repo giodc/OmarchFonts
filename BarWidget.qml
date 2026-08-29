@@ -2,10 +2,10 @@ import QtQuick
 import qs.Commons
 import qs.Ui
 
-// Bar entry for OmarchFonts. Click opens the preview / install panel.
+// Bar entry for OmaFonts. Click opens the preview / install panel.
 BarWidget {
   id: root
-  moduleName: "io.github.giodc.omarchfonts"
+  moduleName: "io.github.giodc.omafonts"
 
   function injectPanel() {
     var target = panelLoader.item
@@ -54,7 +54,7 @@ BarWidget {
     bar: root.bar
     text: "󰛖"
     slotSize: Style.bar.statusSlot
-    tooltipText: "OmarchFonts"
+    tooltipText: "OmaFonts"
 
     onPressed: function(b) {
       if (b === Qt.LeftButton) root.toggle()

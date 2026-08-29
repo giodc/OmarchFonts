@@ -9,15 +9,15 @@ import qs.Ui
 // via omarchy-font-set, and install into ~/.local/share/fonts via zenity.
 Panel {
   id: root
-  moduleName: "io.github.giodc.omarchfonts"
-  ipcTarget: "io.github.giodc.omarchfonts"
+  moduleName: "io.github.giodc.omafonts"
+  ipcTarget: "io.github.giodc.omafonts"
   manageIpc: false
 
   property var anchorItem: null
   property var hostWidget: null
   readonly property var barIdentity: hostWidget || root
 
-  readonly property string pluginVersion: "0.3.0"
+  readonly property string pluginVersion: "0.4.0"
   readonly property color fg: bar ? bar.foreground : Color.foreground
   readonly property color dim: Qt.darker(fg, 1.4)
   readonly property string uiFont: bar ? bar.fontFamily : Style.font.family
@@ -74,7 +74,7 @@ Panel {
   function notify(title, body) {
     Quickshell.execDetached([
       "omarchy-notification-send", title, body,
-      "--app-name", "OmarchFonts"
+      "--app-name", "OmaFonts"
     ])
   }
 
@@ -146,7 +146,7 @@ Panel {
       open()
       installLogProc.exec([
         "bash", "-c",
-        "cat \"${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/omarchfonts-last-install.json\" 2>/dev/null || true"
+        "cat \"${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/omafonts-last-install.json\" 2>/dev/null || true"
       ])
       refreshFonts(true)
       return
@@ -157,7 +157,7 @@ Panel {
       data = JSON.parse(text)
     } catch (e) {
       setNotice("Install finished — refreshing list", true)
-      notify("OmarchFonts", "Install finished. Refreshing font list.")
+      notify("OmaFonts", "Install finished. Refreshing font list.")
       busy = false
       open()
       refreshFonts(true)
@@ -170,7 +170,7 @@ Panel {
     }
     if (data.ok === false) {
       setNotice(data.error || "Install failed", true)
-      notify("OmarchFonts", data.error || "Install failed")
+      notify("OmaFonts", data.error || "Install failed")
       busy = false
       open()
       return
@@ -204,7 +204,7 @@ Panel {
       msg += " — proportional (listed; terminals prefer monospace)"
 
     setNotice(msg, false)
-    notify("OmarchFonts", msg)
+    notify("OmaFonts", msg)
 
     open()
     refreshFonts(true)
@@ -328,13 +328,13 @@ Panel {
           var n = (data.removed && data.removed.length) ? data.removed.length : 0
           var msg = "Removed " + family + (n ? (" (" + n + " file" + (n === 1 ? "" : "s") + ")") : "")
           root.setNotice(msg, false)
-          root.notify("OmarchFonts", msg)
+          root.notify("OmaFonts", msg)
           if (root.currentFamily === family) root.currentFamily = ""
           root.refreshFonts(true)
         } else {
           var err = data.error || "Remove failed"
           root.setNotice(err, true)
-          root.notify("OmarchFonts", err)
+          root.notify("OmaFonts", err)
         }
       }
     }
@@ -445,7 +445,7 @@ Panel {
               anchors.verticalCenter: parent.verticalCenter
             }
             Text {
-              text: "OMARCHFONTS"
+              text: "OMAFONTS"
               color: root.dim
               font.family: root.uiFont
               font.pixelSize: Style.font.caption
