@@ -64,14 +64,3 @@ omarchy-shell shell rescanPlugins
 ```bash
 omarchy plugin remove io.github.giodc.omafonts
 ```
-
-## Renamed from OmarchFonts
-
-If you had the old `io.github.giodc.omarchfonts` plugin installed:
-
-```bash
-omarchy plugin remove io.github.giodc.omarchfonts --yes
-omarchy plugin add https://github.com/giodc/OmaFonts.git --enable
-```
-
-Then replace `io.github.giodc.omarchfonts` with `io.github.giodc.omafonts` in `~/.config/omarchy/shell.json` and run `omarchy restart shell`.
