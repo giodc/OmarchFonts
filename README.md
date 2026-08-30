@@ -2,7 +2,7 @@
 
 Browse Omarchy fonts in a live preview grid, apply one with Activate, and install `.ttf` / `.otf` / `.zip` fonts into `~/.local/share/fonts` from the panel.
 
-**Version:** 0.4.0
+**Version:** 0.4.1
 
 ## Screenshot
 

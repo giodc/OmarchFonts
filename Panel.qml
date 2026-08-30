@@ -17,7 +17,7 @@ Panel {
   property var hostWidget: null
   readonly property var barIdentity: hostWidget || root
 
-  readonly property string pluginVersion: "0.4.0"
+  readonly property string pluginVersion: "0.4.1"
   readonly property color fg: bar ? bar.foreground : Color.foreground
   readonly property color dim: Qt.darker(fg, 1.4)
   readonly property string uiFont: bar ? bar.fontFamily : Style.font.family
@@ -62,6 +62,11 @@ Panel {
     var s = String(url)
     if (s.indexOf("file://") === 0) s = s.substring("file://".length)
     return s
+  }
+
+  // ConfirmDialog (shell) Text uses AutoText; neutralize markup in font-file names.
+  function plainLabel(value) {
+    return String(value || "").replace(/</g, "\uFF1C").replace(/>/g, "\uFF1E")
   }
 
   function setNotice(text, isError) {
@@ -438,6 +443,7 @@ Panel {
             anchors.verticalCenter: parent.verticalCenter
             spacing: Style.space(8)
             Text {
+              textFormat: Text.PlainText
               text: "󰛖"
               color: root.fg
               font.family: root.uiFont
@@ -445,6 +451,7 @@ Panel {
               anchors.verticalCenter: parent.verticalCenter
             }
             Text {
+              textFormat: Text.PlainText
               text: "OMAFONTS"
               color: root.dim
               font.family: root.uiFont
@@ -454,6 +461,7 @@ Panel {
               anchors.verticalCenter: parent.verticalCenter
             }
             Text {
+              textFormat: Text.PlainText
               text: "v" + root.pluginVersion
               color: root.dim
               font.family: root.uiFont
@@ -469,6 +477,7 @@ Panel {
             spacing: Style.space(8)
 
             Text {
+              textFormat: Text.PlainText
               visible: root.busy
               text: "…"
               color: Color.accent
@@ -486,6 +495,7 @@ Panel {
                 : "transparent"
               anchors.verticalCenter: parent.verticalCenter
               Text {
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 text: ""
                 color: root.fg
@@ -511,6 +521,7 @@ Panel {
               anchors.verticalCenter: parent.verticalCenter
               Text {
                 id: addLabel
+                textFormat: Text.PlainText
                 anchors.centerIn: parent
                 text: "+ Add"
                 color: root.fg
@@ -550,6 +561,7 @@ Panel {
         // ---- Status / current ----
         Text {
           id: statusLine
+          textFormat: Text.PlainText
           width: parent.width
           wrapMode: Text.Wrap
           color: root.notice !== "" ? root.noticeColor : root.dim
@@ -645,6 +657,7 @@ Panel {
                   spacing: Style.space(4)
 
                   Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     text: root.previewText
                     color: root.fg
@@ -654,6 +667,7 @@ Panel {
                   }
 
                   Text {
+                    textFormat: Text.PlainText
                     width: parent.width
                     text: modelData.family
                     color: root.dim
@@ -667,6 +681,7 @@ Panel {
                     spacing: Style.space(6)
 
                     Text {
+                      textFormat: Text.PlainText
                       visible: extLabel !== ""
                       text: extLabel
                       color: root.dim
@@ -675,6 +690,7 @@ Panel {
                       font.bold: true
                     }
                     Text {
+                      textFormat: Text.PlainText
                       visible: !isMono
                       text: "proportional"
                       color: root.dim
@@ -682,6 +698,7 @@ Panel {
                       font.pixelSize: Style.font.caption
                     }
                     Text {
+                      textFormat: Text.PlainText
                       visible: isUser && isMono
                       text: "user"
                       color: root.dim
@@ -689,6 +706,7 @@ Panel {
                       font.pixelSize: Style.font.caption
                     }
                     Text {
+                      textFormat: Text.PlainText
                       visible: isCurrent && !isApplying
                       text: "Active"
                       color: Color.accent
@@ -697,6 +715,7 @@ Panel {
                       font.bold: true
                     }
                     Text {
+                      textFormat: Text.PlainText
                       visible: isApplying
                       text: "Applying…"
                       color: Color.accent
@@ -725,6 +744,7 @@ Panel {
 
                   Text {
                     id: deleteLabel
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     text: "Delete"
                     color: root.fg
@@ -760,6 +780,7 @@ Panel {
 
                   Text {
                     id: activateLabel
+                    textFormat: Text.PlainText
                     anchors.centerIn: parent
                     text: "Activate"
                     color: root.fg
@@ -781,6 +802,7 @@ Panel {
           }
 
           Text {
+            textFormat: Text.PlainText
             anchors.centerIn: parent
             visible: root.fontsLoaded && root.filteredFonts.length === 0
             text: root.searchText ? "No matches" : "No monospace fonts found"
@@ -796,7 +818,7 @@ Panel {
           z: 100
           opened: root.removeConfirmOpen
           message: root.removePendingFamily
-            ? ("Remove \"" + root.removePendingFamily + "\" from ~/.local/share/fonts?")
+            ? ("Remove \"" + root.plainLabel(root.removePendingFamily) + "\" from ~/.local/share/fonts?")
             : "Remove this font?"
           cancelText: "Cancel"
           confirmText: root.removing ? "Removing…" : "Delete"
